@@ -41,7 +41,10 @@ inquirer
   });
 
 // displays all products, prices, and stock quantity
-function viewProducts() {
+// bool is only passed when a new product is added from addNewProduct. It is used to display only the row of the new product. If it is true, then the new product gets displayed
+function viewProducts(bool) {
+  bool = bool || false;
+
   // gets the specified columns, and displays the data with a unique name
   var query =
     "SELECT item_id AS 'ID', product_name AS 'Name', price AS 'Price', stock_quantity AS 'Quantity' FROM products;";
@@ -53,8 +56,27 @@ function viewProducts() {
       table.push([res[i].ID, res[i].Name, "$" + res[i].Price, res[i].Quantity]);
     }
 
-    // displays the table
-    console.log(table.toString());
+    // displays all rows in the db
+    if (!bool) {
+      console.log(table.toString());
+
+      // displays only the new row added from addNewProduct
+    } else {
+      // removes the last item from the table, since that is the new row. converts it from an object to a string.
+      // splits at the ',' to convert to an array so it can get added to the table.
+      var last = table
+        .pop()
+        .toString()
+        .split(",");
+
+      // resets the table
+      table = new Table({ head: ["ID", "Name", "Price", "Quantity"] });
+
+      // adds the new product to the table to be displayed.
+      table.push(last);
+      console.log(table.toString());
+      console.log(`${last[1]} has been added to the database`);
+    }
   });
   connection.end();
 }
@@ -141,7 +163,7 @@ function addNewProduct() {
         function(err, res) {
           if (err) throw err;
           // displays the updated db
-          viewProducts();
+          viewProducts(true);
         }
       );
     });
@@ -200,7 +222,7 @@ function getItem(id, totalPurchased) {
     function(err, res) {
       if (err) throw err;
 
-      // adds each item to the table
+      // adds the updated item to the table
       table.push([res[0].ID, res[0].Name, "$" + res[0].Price, res[0].Quantity]);
       console.log(table.toString());
       console.log(`You added ${totalPurchased} of ${res[0].Name}`);
