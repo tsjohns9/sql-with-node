@@ -6,39 +6,41 @@ var Table = require("cli-table");
 var table = new Table({ head: ["ID", "Name", "Price", "Quantity"] });
 
 // initial prompt
-inquirer
-  .prompt([
-    {
-      name: "action",
-      type: "rawlist",
-      message: "What would you like to do?",
-      choices: [
-        "View Products for Sale",
-        "View Low Inventory",
-        "Add to Inventory",
-        "Add new Product"
-      ]
-    }
-  ])
-  .then(function(answer) {
-    switch (answer.action) {
-      case "View Products for Sale":
-        viewProducts();
-        break;
+function mainPrompt() {
+  inquirer
+    .prompt([
+      {
+        name: "action",
+        type: "rawlist",
+        message: "What would you like to do?",
+        choices: [
+          "View Products for Sale",
+          "View Low Inventory",
+          "Add to Inventory",
+          "Add new Product"
+        ]
+      }
+    ])
+    .then(function(answer) {
+      switch (answer.action) {
+        case "View Products for Sale":
+          viewProducts();
+          break;
 
-      case "View Low Inventory":
-        lowInventory();
-        break;
+        case "View Low Inventory":
+          lowInventory();
+          break;
 
-      case "Add to Inventory":
-        addInventory();
-        break;
+        case "Add to Inventory":
+          addInventory();
+          break;
 
-      case "Add new Product":
-        addNewProduct();
-        break;
-    }
-  });
+        case "Add new Product":
+          addNewProduct();
+          break;
+      }
+    });
+}
 
 // displays all products, prices, and stock quantity
 // bool is only passed when a new product is added from addNewProduct. It is used to display only the row of the new product. If it is true, then the new product gets displayed
@@ -77,8 +79,9 @@ function viewProducts(bool) {
       console.log(table.toString());
       console.log(`${last[1]} has been added to the database`);
     }
+
+    returnPrompt();
   });
-  connection.end();
 }
 
 // displays items with a low inventory of less than 5
@@ -95,8 +98,9 @@ function lowInventory() {
       table.push([res[i].ID, res[i].Name, "$" + res[i].Price, res[i].Quantity]);
     }
     console.log(table.toString());
+    console.log("Here is what you are low in");
+    returnPrompt();
   });
-  connection.end();
 }
 
 // prompts the user to get info about what to add to the db, and how many of the product
@@ -120,6 +124,8 @@ function addInventory() {
       if (ans.quantity.includes("-")) {
         return console.log("You may only add to the the inventory");
       }
+
+      // gets the selected items quantity
       getQuantity(ans.id, ans.quantity);
     });
 }
@@ -171,6 +177,9 @@ function addNewProduct() {
 
 // gets the current quantity of an item. Called in addInventory so that we can get the current inventory, and the total of the item purchased from addInventory
 function getQuantity(id, totalPurchased) {
+  // throws an error if an invalid product id is entered
+  totalItems(id);
+
   var query = "SELECT stock_quantity FROM products WHERE ?";
   connection.query(
     query,
@@ -180,6 +189,8 @@ function getQuantity(id, totalPurchased) {
     function(err, res) {
       if (err) throw err;
       console.log(res);
+
+      // updates inventory with the new total after purchase
       updateInventory(id, res[0].stock_quantity, totalPurchased);
     }
   );
@@ -204,6 +215,8 @@ function updateInventory(id, currentQ, totalPurchased) {
     ],
     function(err, res) {
       if (err) throw err;
+
+      // gets the updated item to display to the user
       getItem(id, totalPurchased);
     }
   );
@@ -226,7 +239,43 @@ function getItem(id, totalPurchased) {
       table.push([res[0].ID, res[0].Name, "$" + res[0].Price, res[0].Quantity]);
       console.log(table.toString());
       console.log(`You added ${totalPurchased} of ${res[0].Name}`);
+      returnPrompt();
     }
   );
-  connection.end();
 }
+
+// returns user to main prompt, or exits the app. Gets called in each main option at the end of the function.
+function returnPrompt() {
+  inquirer
+    .prompt([
+      {
+        name: "mainPrompt",
+        type: "list",
+        message: "Return to main menu?",
+        choices: ["Yes", "No"]
+      }
+    ])
+    .then(function(ans) {
+      // resets table so that a new table is displayed for each search
+      table = new Table({ head: ["ID", "Name", "Price", "Quantity"] });
+      if (ans.mainPrompt === "Yes") {
+        mainPrompt();
+      } else {
+        connection.end();
+        return console.log("Goodbye!");
+      }
+    });
+}
+
+// checks for a valid product ID by returning a total count of rows from the products table. Throws an error if one occurs
+function totalItems(id) {
+  var query = "SELECT COUNT(*) AS total FROM products;";
+
+  connection.query(query, function(err, res) {
+    if (err) throw err;
+    if (id > res[0].total || id < 1) throw "Invalid product ID";
+  });
+}
+
+// executes the app
+mainPrompt();
