@@ -24,3 +24,5 @@ VALUES ('Laptop', 'electronics', 800.00, 5),
        ('A cat', 'animals', 1.00, 2),
        ('Guitar', 'music', 300.00, 46),
        ('Cool video game', 'gaming', 59.990, 753);
+
+SELECT item_id AS 'ID', product_name AS 'Name', price AS 'Price', stock_quantity AS 'Quantity' FROM products WHERE stock_quantity < 5;

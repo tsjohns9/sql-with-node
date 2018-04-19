@@ -1,4 +1,4 @@
-var displayProducts = require("./js/displayProduct");
+var displayProducts = require("./js/customer/displayProduct");
 var connection = require("./js/connection");
 
 // Makes the MySQL connection

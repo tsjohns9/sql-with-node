@@ -1,6 +1,6 @@
 var inquirer = require("inquirer");
 var searchProduct = require("./searchProduct");
-var connection = require("./connection");
+var connection = require("../connection");
 
 // Starts the inquirer prompt, and displays all products
 function displayProducts() {

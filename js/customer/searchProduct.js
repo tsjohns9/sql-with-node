@@ -1,5 +1,5 @@
 var updateQuantity = require("./updateQuantity");
-var connection = require("./connection");
+var connection = require("../connection");
 
 // Searches the db based on the product ID the user entered
 function searchProduct(val) {

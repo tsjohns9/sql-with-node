@@ -1,4 +1,4 @@
-var connection = require("./connection");
+var connection = require("../connection");
 
 // updates the new quantity and makes the purchase
 function updateQuantity(requested, item) {
@@ -20,7 +20,11 @@ function updateQuantity(requested, item) {
 
     // displays the total cost of the purchase
     function(err, res) {
-      console.log(`Your total cost is $${item[0].price * requested.quantity}`);
+      console.log(
+        `You bought ${requested.quantity} ${
+          item[0].product_name
+        } Your total cost is $${item[0].price * requested.quantity}`
+      );
       connection.end();
     }
   );
