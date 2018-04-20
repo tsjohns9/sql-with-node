@@ -95,9 +95,19 @@ function addInventory() {
       }
     ])
     .then(function(ans) {
-      // prevents the user from subtracting items from the inventory
-      if (ans.quantity.includes("-")) {
-        return console.log("You may only add to the the inventory");
+      // Checks for valid number input for quantity and product id.
+      if (
+        ans.quantity.includes("-") ||
+        ans.quantity.includes("+") ||
+        ans.id.includes("-") ||
+        ans.id.includes("+") ||
+        isNaN(ans.id) ||
+        isNaN(ans.quantity)
+      ) {
+        console.log(
+          "Invalid entry. Either the product ID, or quantity you entered is not a valid number."
+        );
+        return connection.end();
       }
 
       // gets the selected items quantity
@@ -132,6 +142,9 @@ function addNewProduct() {
     ])
     .then(function(ans) {
       // query to add a new row based on user input
+
+      // *********** ADD ERROR HANDLING *******************************************************
+
       var query = "INSERT INTO products SET ?";
       connection.query(
         query,
