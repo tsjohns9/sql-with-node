@@ -2,7 +2,7 @@ var connection = require("./js/connection");
 var inquirer = require("inquirer");
 var Table = require("cli-table");
 
-// allows mysql data to be displayed as a table
+// Will be used to display mysql data as a table
 var table = new Table({ head: ["ID", "Name", "Price", "Quantity"] });
 
 // initial prompt
@@ -43,10 +43,7 @@ function mainPrompt() {
 }
 
 // displays all products, prices, and stock quantity
-// bool is only passed when a new product is added from addNewProduct. It is used to display only the row of the new product. If it is true, then the new product gets displayed
-function viewProducts(bool) {
-  bool = bool || false;
-
+function viewProducts() {
   // gets the specified columns, and displays the data with a unique name
   var query =
     "SELECT item_id AS 'ID', product_name AS 'Name', price AS 'Price', stock_quantity AS 'Quantity' FROM products;";
@@ -54,32 +51,12 @@ function viewProducts(bool) {
     if (err) throw err;
 
     // adds each item to the table
-    for (var i = 0; i < res.length; i++) {
-      table.push([res[i].ID, res[i].Name, "$" + res[i].Price, res[i].Quantity]);
-    }
+    addToTable(res);
 
-    // displays all rows in the db
-    if (!bool) {
-      console.log(table.toString());
+    // info about result
+    console.log("Here are all the products");
 
-      // displays only the new row added from addNewProduct
-    } else {
-      // removes the last item from the table, since that is the new row. converts it from an object to a string.
-      // splits at the ',' to convert to an array so it can get added to the table.
-      var last = table
-        .pop()
-        .toString()
-        .split(",");
-
-      // resets the table
-      table = new Table({ head: ["ID", "Name", "Price", "Quantity"] });
-
-      // adds the new product to the table to be displayed.
-      table.push(last);
-      console.log(table.toString());
-      console.log(`${last[1]} has been added to the database`);
-    }
-
+    // brings user to main prompt
     returnPrompt();
   });
 }
@@ -94,10 +71,8 @@ function lowInventory() {
     if (err) throw err;
 
     // adds each item to the table
-    for (var i = 0; i < res.length; i++) {
-      table.push([res[i].ID, res[i].Name, "$" + res[i].Price, res[i].Quantity]);
-    }
-    console.log(table.toString());
+    addToTable(res);
+
     console.log("Here is what you are low in");
     returnPrompt();
   });
@@ -160,6 +135,7 @@ function addNewProduct() {
       var query = "INSERT INTO products SET ?";
       connection.query(
         query,
+        // the object below replaces the ? in the query. It is the info we are adding to the table.
         {
           product_name: ans.product,
           department_name: ans.department,
@@ -167,12 +143,40 @@ function addNewProduct() {
           stock_quantity: ans.inventory
         },
         function(err, res) {
+          console.log(ans);
           if (err) throw err;
-          // displays the updated db
-          viewProducts(true);
+
+          // gets the new product from the db to display to the user. Done this way so we can get the product ID as well.
+          getNewProduct(ans);
         }
       );
     });
+}
+
+// gets the new product that was added to the db from the addNewProduct function
+function getNewProduct(product) {
+  // mysql query to the db
+  var query =
+    "SELECT item_id AS 'ID', product_name AS 'Name', price AS 'Price', stock_quantity AS 'Quantity' FROM products WHERE ?;";
+  connection.query(
+    query,
+    // object below replaces the ? in the query. searches the product_name column for the specified product name
+    {
+      product_name: product.product
+    },
+    function(err, res) {
+      if (err) throw err;
+
+      // used to display the new product to the user
+      addToTable(res);
+
+      // info about the result
+      console.log(`${res[0].Name} has been added to the database`);
+
+      // brings user back to main prompt
+      returnPrompt();
+    }
+  );
 }
 
 // gets the current quantity of an item. Called in addInventory so that we can get the current inventory, and the total of the item purchased from addInventory
@@ -180,9 +184,11 @@ function getQuantity(id, totalPurchased) {
   // throws an error if an invalid product id is entered
   totalItems(id);
 
+  // query to find the total amount of something in stock
   var query = "SELECT stock_quantity FROM products WHERE ?";
   connection.query(
     query,
+    // object below replaces the ? in var query. It searches the item_id column of the specified product ID.
     {
       item_id: id
     },
@@ -196,7 +202,8 @@ function getQuantity(id, totalPurchased) {
   );
 }
 
-// updates an item with its current quantity + the new total amount purchased. Called in getQuantity
+// updates an item with its current quantity + the new total amount purchased. Called in getQuantity.
+// id is the current product id we are updating. currentQ is how much of it is in the db. totalPurchased is how many more items of the product the user wants.
 function updateInventory(id, currentQ, totalPurchased) {
   // adds the current inventory to the new total purchased. Number() converts the numbers from a string to a number.
   var newQ = Number(currentQ) + Number(totalPurchased);
@@ -205,6 +212,8 @@ function updateInventory(id, currentQ, totalPurchased) {
   var query = "UPDATE products SET ? WHERE ?";
   connection.query(
     query,
+
+    // replaces the ? in the query. sets the stock_quantity of the specified product by locating its item_id
     [
       {
         stock_quantity: newQ
@@ -229,6 +238,8 @@ function getItem(id, totalPurchased) {
 
   connection.query(
     query,
+
+    // replaces the ? in query. selects the specified product by its item_id.
     {
       item_id: id
     },
@@ -236,9 +247,12 @@ function getItem(id, totalPurchased) {
       if (err) throw err;
 
       // adds the updated item to the table
-      table.push([res[0].ID, res[0].Name, "$" + res[0].Price, res[0].Quantity]);
-      console.log(table.toString());
+      addToTable(res);
+
+      // info about the result
       console.log(`You added ${totalPurchased} of ${res[0].Name}`);
+
+      // brings user to main prompt
       returnPrompt();
     }
   );
@@ -269,12 +283,24 @@ function returnPrompt() {
 
 // checks for a valid product ID by returning a total count of rows from the products table. Throws an error if one occurs
 function totalItems(id) {
+  // counts how many rows in the products table
   var query = "SELECT COUNT(*) AS total FROM products;";
 
   connection.query(query, function(err, res) {
     if (err) throw err;
     if (id > res[0].total || id < 1) throw "Invalid product ID";
   });
+}
+
+// takes in the result from a db query, and formats it so it displays as a table
+function addToTable(res) {
+  // loops through each index in res. res may only have 1 index depending on what search invokes it.
+  for (var i = 0; i < res.length; i++) {
+    table.push([res[i].ID, res[i].Name, "$" + res[i].Price, res[i].Quantity]);
+  }
+
+  // displays the table
+  return console.log(table.toString());
 }
 
 // executes the app
