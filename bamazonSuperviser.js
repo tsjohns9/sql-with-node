@@ -1,6 +1,7 @@
 var connection = require("./js/connection");
 var inquirer = require("inquirer");
 var Table = require("cli-table");
+var departmentSales = require("./js/superviser/departmentSales");
 
 function supervisor() {
   inquirer
@@ -15,7 +16,7 @@ function supervisor() {
     .then(function(answer) {
       switch (answer.action) {
         case "View Product Sales by Department":
-          // departmentSales();
+          departmentSales();
           break;
 
         case "Create New Department":
@@ -24,5 +25,3 @@ function supervisor() {
       }
     });
 }
-
-function departmentSales() {}

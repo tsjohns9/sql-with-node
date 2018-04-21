@@ -157,11 +157,53 @@ function addNewProduct() {
           console.log(ans);
           if (err) throw err;
 
+          // checks if the name of the department of the new product exists.
+          checkDepartments(ans.department);
+
           // gets the new product from the db to display to the user. Done this way so we can get the product ID as well.
           getNewProduct(ans);
         }
       );
     });
+}
+
+// Called in addNewProduct. checks if the new products department exists in the db
+function checkDepartments(dep) {
+  var query = "SELECT * FROM departments;";
+
+  connection.query(query, function(err, res) {
+    if (err) throw err;
+    console.log(res);
+
+    // returns the department name for each row in departments
+    // checks if the new array includes the department name of the new product
+    var included = res
+      .map(index => {
+        return index.department_name;
+      })
+      .includes(dep);
+
+    // included returns true or false. if the department doesn't exist, then addDepartment creates a table for it.
+    if (!included) {
+      addDepartment(dep);
+    }
+  });
+}
+
+// Called in checkDepartments. adds the new product department to the departments table if it doesn't exist
+function addDepartment(dep) {
+  var query = "INSERT INTO departments SET ?";
+
+  connection.query(
+    query,
+    {
+      department_name: dep,
+      over_head_costs: 200
+    },
+    function(err, res) {
+      if (err) throw err;
+    }
+  );
 }
 
 // gets the new product that was added to the db from the addNewProduct function

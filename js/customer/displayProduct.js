@@ -1,7 +1,6 @@
 var inquirer = require("inquirer");
 var searchProduct = require("./searchProduct");
 var connection = require("../connection");
-
 var Table = require("cli-table");
 
 // Will be used to display mysql data as a table
