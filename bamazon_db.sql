@@ -15,10 +15,10 @@ CREATE TABLE products (
 );
 
 CREATE TABLE departments (
-	department_id INT NOT NULL AUTO_INCREMENT,
-    departnemt_name VARCHAR(100) DEFAULT NULL,
-    over_head_costs INT DEFAULT NULL,
-	PRIMARY KEY(department_id)
+  department_id INT NOT NULL AUTO_INCREMENT,
+  departnemt_name VARCHAR(100) DEFAULT NULL,
+  over_head_costs INT DEFAULT NULL,
+  PRIMARY KEY(department_id)
 );
 
 INSERT INTO products(product_name, department_name, price, stock_quantity)
@@ -33,5 +33,9 @@ VALUES ('Laptop', 'electronics', 800.00, 5),
        ('Guitar', 'music', 300.00, 46),
        ('Cool video game', 'gaming', 59.990, 753);
 
-
-SELECT * FROM products;
+SELECT departments.department_id AS 'Department ID',
+products.department_name AS 'Department',
+departments.over_head_costs AS 'Over Head Costs',
+products.product_sales AS 'Product Sales'
+FROM products INNER JOIN departments
+ON (departments.departnemt_name = products.department_name);

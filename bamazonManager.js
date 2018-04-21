@@ -104,9 +104,7 @@ function addInventory() {
         isNaN(ans.id) ||
         isNaN(ans.quantity)
       ) {
-        console.log(
-          "Invalid entry. Either the product ID, or quantity you entered is not a valid number."
-        );
+        console.log("Invalid product ID or quantity.");
         return connection.end();
       }
 
