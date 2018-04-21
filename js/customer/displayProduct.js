@@ -2,28 +2,28 @@ var inquirer = require("inquirer");
 var searchProduct = require("./searchProduct");
 var connection = require("../connection");
 
+var Table = require("cli-table");
+
+// Will be used to display mysql data as a table
+var table = new Table({ head: ["ID", "Name", "Price"] });
+
 // Starts the inquirer prompt, and displays all products
 function displayProducts() {
   // gets all products
-  var query = "SELECT * FROM products;";
-
+  var query =
+    "SELECT item_id AS 'ID', product_name AS 'Name', price AS 'Price' FROM products;";
   // executes the above query
   connection.query(query, function(err, res) {
     if (err) {
       console.log(err);
       return connection.end();
     }
-    console.log(res.length);
-    // adds each item to resArray
-    for (var i = 0; i < res.length; i++) {
-      var tmp = "";
-      tmp += `Item ID: ${res[i].item_id}, ${res[i].product_name}, Price: $${
-        res[i].price
-      }`;
 
-      // prints each item to the screen
-      console.log(tmp);
+    // loops through each index in res. res may only have 1 index depending on what search invokes it.
+    for (var i = 0; i < res.length; i++) {
+      table.push([res[i].ID, res[i].Name, "$" + res[i].Price]);
     }
+    console.log(table.toString());
 
     // The user will see each product from the above console.log, and then they are prompted to enter a product ID to make a purchase
     inquirer
@@ -31,12 +31,12 @@ function displayProducts() {
         {
           name: "id",
           type: "prompt",
-          message: "Enter the ID of the product you would like to buy"
+          message: "Enter the ID of the product you would like to buy \n"
         },
         {
           name: "quantity",
           type: "prompt",
-          message: "How many would you like?"
+          message: "How many would you like? \n"
         }
       ])
       .then(function(answer) {

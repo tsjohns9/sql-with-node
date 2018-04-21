@@ -10,7 +10,15 @@ CREATE TABLE products (
   department_name VARCHAR(100) DEFAULT NULL,
   price DECIMAL(10,2) DEFAULT NULL,
   stock_quantity INT DEFAULT NULL,
+  product_sales DECIMAL(10,2) DEFAULT 0,
   PRIMARY KEY(item_id)
+);
+
+CREATE TABLE departments (
+	department_id INT NOT NULL AUTO_INCREMENT,
+    departnemt_name VARCHAR(100) DEFAULT NULL,
+    over_head_costs INT DEFAULT NULL,
+	PRIMARY KEY(department_id)
 );
 
 INSERT INTO products(product_name, department_name, price, stock_quantity)
@@ -25,4 +33,5 @@ VALUES ('Laptop', 'electronics', 800.00, 5),
        ('Guitar', 'music', 300.00, 46),
        ('Cool video game', 'gaming', 59.990, 753);
 
-SELECT item_id AS 'ID', product_name AS 'Name', price AS 'Price', stock_quantity AS 'Quantity' FROM products WHERE stock_quantity < 5;
+
+SELECT * FROM products;

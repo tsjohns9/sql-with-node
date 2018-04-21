@@ -8,12 +8,10 @@ function searchProduct(val) {
 
   // executes the above query. Second parameter replaces the '?' in the query.
   connection.query(query, { item_id: val.id }, function(err, res) {
-    if (err) {
-      console.log(err);
-      return connection.end();
-      // checks if there is enough in stock
-    } else if (val.quantity > res[0].stock_quantity) {
-      console.log("Not enough in stock!");
+    if (err) throw err;
+
+    if (val.quantity > res[0].stock_quantity) {
+      console.log("Not enough in stock");
       return connection.end();
     }
 
