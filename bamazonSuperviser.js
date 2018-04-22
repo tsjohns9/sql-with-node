@@ -2,6 +2,7 @@ var connection = require("./js/connection");
 var inquirer = require("inquirer");
 var Table = require("cli-table");
 var departmentSales = require("./js/superviser/departmentSales");
+var newDepartment = require("./js/superviser/newDepartment");
 
 function supervisor() {
   inquirer
@@ -20,8 +21,10 @@ function supervisor() {
           break;
 
         case "Create New Department":
-          // newDepartment();
+          newDepartment();
           break;
       }
     });
 }
+
+supervisor();

@@ -148,6 +148,7 @@ function addNewProduct() {
     });
 }
 
+// called in addNewProduct. Prevents the user from adding a product that already exists.
 function checkIfProductExists(ans) {
   var query = "SELECT * FROM products WHERE ?;";
 
@@ -159,7 +160,7 @@ function checkIfProductExists(ans) {
     function(err, res) {
       if (err) throw err;
 
-      // prevents duplicate products from being added
+      // prevents duplicate products from being added by checking the length of res. if res.length > 0, then the product exists in the db
       if (res.length > 0) {
         console.log("Product already exists!");
         returnPrompt();
@@ -170,6 +171,7 @@ function checkIfProductExists(ans) {
   );
 }
 
+// called in checkIfProductExists. adds product to the db after checking if it already exists.
 function addProductToDb(ans) {
   var query = "INSERT INTO products SET ?";
   connection.query(
