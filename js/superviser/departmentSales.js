@@ -16,11 +16,11 @@ var table = new Table({
 
 function departmentSales() {
   var query = `SELECT departments.department_id,
-    products.department_name,
+    departments.department_name,
     departments.over_head_costs,
     products.product_sales,
     products.product_sales - departments.over_head_costs AS product_profit
-    FROM products INNER JOIN departments
+    FROM departments left JOIN products
     ON (departments.department_name = products.department_name)
     GROUP BY department_name ORDER BY 5 desc;`;
 

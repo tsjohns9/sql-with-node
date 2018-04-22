@@ -22,13 +22,13 @@ CREATE TABLE departments (
 );
 
 INSERT INTO departments (department_name, over_head_costs) VALUES
-('electronics', 10000),
-('books', 800),
-('groceries', 4000),
-('clothes', 400),
-('animals', 5),
-('music', 2000),
-('gaming', 7000);
+('electronics', 2500),
+('books', 199),
+('groceries', 320),
+('clothing', 300),
+('animals', 5.01),
+('music', 1200),
+('gaming', 1000);
 
 INSERT INTO products(product_name, department_name, price, stock_quantity) VALUES 
 ('Laptop', 'electronics', 800.00, 5),
@@ -44,10 +44,11 @@ INSERT INTO products(product_name, department_name, price, stock_quantity) VALUE
 
 SELECT * FROM departments;
 
-SELECT departments.department_id AS 'Department ID',
-products.department_name AS 'Department',
-departments.over_head_costs AS 'Over Head Costs',
-products.product_sales AS 'Product Sales'
-FROM products INNER JOIN departments
+SELECT departments.department_id,
+departments.department_name,
+departments.over_head_costs,
+products.product_sales,
+products.product_sales - departments.over_head_costs AS product_profit
+FROM departments left JOIN products
 ON (departments.department_name = products.department_name)
-GROUP BY department;
+GROUP BY department_name ORDER BY 5 desc;
