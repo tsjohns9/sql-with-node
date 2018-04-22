@@ -143,6 +143,9 @@ function addNewProduct() {
 
       // *********** ADD ERROR HANDLING *******************************************************
 
+      // checks if the product already exists in the db.
+      checkIfProductExists(ans.product);
+
       var query = "INSERT INTO products SET ?";
       connection.query(
         query,
@@ -154,7 +157,6 @@ function addNewProduct() {
           stock_quantity: ans.inventory
         },
         function(err, res) {
-          console.log(ans);
           if (err) throw err;
 
           // checks if the name of the department of the new product exists.
@@ -167,13 +169,34 @@ function addNewProduct() {
     });
 }
 
+function checkIfProductExists(product) {
+  var query = "SELECT * FROM products WHERE ?;";
+
+  connection.query(
+    query,
+    {
+      product_name: product
+    },
+    function(err, res) {
+      if (err) throw err;
+
+      // prevents duplicate products from being added
+      if (res.length > 0) {
+        console.log("Product already exists!");
+      } else {
+      }
+    }
+  );
+}
+
+function addProductToDb() {}
+
 // Called in addNewProduct. checks if the new products department exists in the db
 function checkDepartments(dep) {
   var query = "SELECT * FROM departments;";
 
   connection.query(query, function(err, res) {
     if (err) throw err;
-    console.log(res);
 
     // returns the department name for each row in departments
     // checks if the new array includes the department name of the new product
@@ -247,7 +270,6 @@ function getQuantity(id, totalPurchased) {
     },
     function(err, res) {
       if (err) throw err;
-      console.log(res);
 
       // updates inventory with the new total after purchase
       updateInventory(id, res[0].stock_quantity, totalPurchased);
@@ -334,7 +356,7 @@ function returnPrompt() {
     });
 }
 
-// checks for a valid product ID by returning a total count of rows from the products table. Throws an error if one occurs
+// Called in getQuantity. checks for a valid product ID by returning a total count of rows from the products table. Throws an error if one occurs
 function totalItems(id) {
   // counts how many rows in the products table
   var query = "SELECT COUNT(*) AS total FROM products;";
