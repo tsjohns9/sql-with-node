@@ -144,38 +144,17 @@ function addNewProduct() {
       // *********** ADD ERROR HANDLING *******************************************************
 
       // checks if the product already exists in the db.
-      checkIfProductExists(ans.product);
-
-      var query = "INSERT INTO products SET ?";
-      connection.query(
-        query,
-        // the object below replaces the ? in the query. It is the info we are adding to the table.
-        {
-          product_name: ans.product,
-          department_name: ans.department,
-          price: ans.price,
-          stock_quantity: ans.inventory
-        },
-        function(err, res) {
-          if (err) throw err;
-
-          // checks if the name of the department of the new product exists.
-          checkDepartments(ans.department);
-
-          // gets the new product from the db to display to the user. Done this way so we can get the product ID as well.
-          getNewProduct(ans);
-        }
-      );
+      checkIfProductExists(ans);
     });
 }
 
-function checkIfProductExists(product) {
+function checkIfProductExists(ans) {
   var query = "SELECT * FROM products WHERE ?;";
 
   connection.query(
     query,
     {
-      product_name: product
+      product_name: ans.product
     },
     function(err, res) {
       if (err) throw err;
@@ -183,13 +162,36 @@ function checkIfProductExists(product) {
       // prevents duplicate products from being added
       if (res.length > 0) {
         console.log("Product already exists!");
+        returnPrompt();
       } else {
+        addProductToDb(ans);
       }
     }
   );
 }
 
-function addProductToDb() {}
+function addProductToDb(ans) {
+  var query = "INSERT INTO products SET ?";
+  connection.query(
+    query,
+    // the object below replaces the ? in the query. It is the info we are adding to the table.
+    {
+      product_name: ans.product,
+      department_name: ans.department,
+      price: ans.price,
+      stock_quantity: ans.inventory
+    },
+    function(err, res) {
+      if (err) throw err;
+
+      // checks if the name of the department of the new product exists.
+      checkDepartments(ans.department);
+
+      // gets the new product from the db to display to the user. Done this way so we can get the product ID as well.
+      getNewProduct(ans);
+    }
+  );
+}
 
 // Called in addNewProduct. checks if the new products department exists in the db
 function checkDepartments(dep) {
