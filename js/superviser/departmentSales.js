@@ -26,27 +26,24 @@ function departmentSales() {
 
   connection.query(query, function(err, res) {
     if (err) throw err;
-    addToTable(res);
+
+    // adds each row to the table
+    for (var i = 0; i < res.length; i++) {
+      table.push([
+        res[i].department_id,
+        res[i].department_name,
+        "$" + res[i].over_head_costs,
+        "$" + res[i].product_sales,
+        "$" + res[i].product_profit
+      ]);
+    }
+
+    // displays the table
+    return console.log(table.toString());
+
     console.log("Here are the sales by department");
     connection.end();
   });
-}
-
-// takes in the result from a db query, and formats it so it displays as a table
-function addToTable(res) {
-  // loops through each index in res. res may only have 1 index depending on what search invokes it.
-  for (var i = 0; i < res.length; i++) {
-    table.push([
-      res[i].department_id,
-      res[i].department_name,
-      "$" + res[i].over_head_costs,
-      "$" + res[i].product_sales,
-      "$" + res[i].product_profit
-    ]);
-  }
-
-  // displays the table
-  return console.log(table.toString());
 }
 
 module.exports = departmentSales;
