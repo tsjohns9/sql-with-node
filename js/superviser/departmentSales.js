@@ -39,11 +39,10 @@ function departmentSales() {
     }
 
     // displays the table
-    return console.log(table.toString());
-
+    console.log(table.toString());
     console.log("Here are the sales by department");
-    connection.end();
   });
+  connection.end();
 }
 
 module.exports = departmentSales;
